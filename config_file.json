@@ -1,0 +1,81 @@
+{
+    "friendly_name": "API_EXAMPLE", 
+    "intro": "示例 API 配置文件", 
+    "icon": "https://github.com/user-attachments/assets/83078bfd-fb6a-4ffd-90b2-27bf7f611bf9",
+    "link": "https://api.example.com/generate",
+    "func": "POST",
+    "APICORE_version": "1.0",
+    "parameters": [
+      {
+        "type": "integer",
+        "required": true,
+        "value": 5,
+        "friendly_name": "生成数量",
+        "min_value": 1,
+        "max_value": 10,
+        "split_str": null
+      }, 
+      {
+        "type": "boolean",
+        "required": true,
+        "value": false,
+        "friendly_name": "年龄是否大于20",
+        "min_value": null,
+        "max_value": null,
+        "split_str": null
+      }, 
+      {
+        "type": "list",
+        "required": false,
+        "value": ["男", "女"],
+        "friendly_name": "性别",
+        "min_value": null,
+        "max_value": null,
+        "split_str": "&"
+      }, 
+      {
+        "type": "string",
+        "value": "hello",
+        "required": false,
+        "friendly_name": "姓名",
+        "min_value": null,
+        "max_value": null,
+        "split_str": null
+      }, 
+      {
+        "type": "enum",
+        "required": true,
+        "value": ["迅雷", "清华镜像", "直接下载"],
+        "friendly_name": "下载来源",
+        "min_value": null,
+        "max_value": null,
+        "split_str": null
+      }
+    ],
+    "response": {
+      "image": {
+        "content_type": "BINARY",
+        "path": "data.image.raw",
+        "is_list": true,
+        "is_base64": false
+      },
+      "others": [
+        {"friendly_name": "图片信息", 
+          "data": [
+            {"friendly_name": "图片宽度", 
+              "path": "data.image.info.width"},
+            {"friendly_name": "图片高度", 
+              "path": "data.image.info.height"}
+            ]
+        }, 
+        {"friendly_name": "作者信息", 
+          "data": [
+            {"friendly_name": "作者名称", 
+              "path": "data.user.info.name"},
+            {"friendly_name": "作者主页", 
+              "path": "data.user.info.homepage"}
+            ]
+        }
+      ]
+    }
+}
