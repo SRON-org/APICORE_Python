@@ -1,11 +1,24 @@
-# APICORE Python 库
+<div align="center">
 
-用于解析符合 APICORE 规范的 API 配置文件的 Python 库。
+<image src="https://github.com/user-attachments/assets/83078bfd-fb6a-4ffd-90b2-27bf7f611bf9" height="86"/>
 
-## 安装
+# APICORE_Python
+
+[![Version](https://img.shields.io/badge/version-0.1.0-green.svg)](VERSION)
+
+APICORE access framework for Python
+
+#### [Main Repo](https://github.com/SRON-org/APICORE)
+
+</div>
+
+## 介绍
+APICORE_Python 是一个 Python 库，用于解析符合 APICORE 规范的 API 配置文件。
+
+## 安装 （即将上架）
 
 ```bash
-pip install APICORE
+pip install APICORE_Python
 ```
 
 ## 功能特性
@@ -14,7 +27,7 @@ pip install APICORE
 - 便捷访问配置参数
 - 类型提示支持
 - 完善的错误处理
-- 可扩展的插件系统
+- **可扩展的插件系统**
 
 ## 使用方法
 
@@ -45,42 +58,7 @@ for other in cfg.response().others():
 
 ## 配置文件格式
 
-APICORE 配置文件遵循特定的 JSON 格式，完整规范请参考 [APICORE_Wiki.md](APICORE_Wiki.md)。
-
-示例配置：
-
-```json
-{
-    "link": "https://api.example.com/generate",
-    "func": "POST",
-    "APICORE_version": "1.0",
-    "parameters": [
-        {
-            "type": "integer",
-            "required": true,
-            "value": 5,
-            "friendly_name": "生成数量",
-            "min_value": 1,
-            "max_value": 10
-        }
-    ],
-    "response": {
-        "image": {
-            "content_type": "BINARY",
-            "path": "data.image.raw",
-            "is_list": true
-        },
-        "others": [
-            {
-                "friendly_name": "图片信息",
-                "data": [
-                    {"friendly_name": "图片宽度", "path": "data.image.info.width"}
-                ]
-            }
-        ]
-    }
-}
-```
+APICORE 配置文件遵循特定的 JSON 格式，完整规范请参考 [APICORE_Wiki.md](https://github.com/SRON-org/APICORE/wiki/Create-a-New-APICORE-Configuration-File)。
 
 ## 插件开发指南
 
@@ -105,7 +83,7 @@ def parse_[解析类型](response_data: Dict[str, Any]) -> Dict[str, Any]:
     返回:
         解析后的[解析类型]配置字典
     """
-    # 在这里实现你的解析逻辑
+    # 实现解析逻辑
     return response_data.get('[解析类型]', {})
 ```
 
@@ -149,4 +127,4 @@ def parse_image(response_data: Dict[str, Any]) -> Dict[str, Any]:
 
 ## 许可证
 
-MIT
+MIT License
