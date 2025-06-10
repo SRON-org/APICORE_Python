@@ -54,7 +54,7 @@ class APICORE:
             raise ValueError(f"配置文件验证失败: {str(e)}")
     
     def friendly_name(self) -> str:
-        """获取 API 名称"""
+        """获取 API 友好名称"""
         return self.config['friendly_name']
     
     def intro(self) -> str:
