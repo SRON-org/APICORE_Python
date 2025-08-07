@@ -4,7 +4,7 @@
 
 # APICORE_Python
 
-[![Version](https://img.shields.io/badge/version-0.1.0-green.svg)](VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.1-green.svg)](VERSION)
 
 APICORE access framework for Python
 
@@ -15,7 +15,7 @@ APICORE access framework for Python
 ## 介绍
 APICORE_Python 是一个 Python 库，用于解析符合 APICORE 规范的 API 配置文件。
 
-## 安装 （即将上架）
+## 安装
 
 ```bash
 pip install APICORE_Python
