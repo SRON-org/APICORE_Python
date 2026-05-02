@@ -229,10 +229,12 @@ def _build_parameter(
 ) -> Parameter:
     mapping = _require_mapping(raw, path)
     parameter_type = _require_non_empty_str(mapping, "type", f"{path}.type")
-    friendly_name = _require_non_empty_str(
-        mapping, "friendly_name", f"{path}.friendly_name"
-    )
     enable = _optional_bool(mapping.get("enable"), f"{path}.enable", default=True)
+    if "friendly_name" not in mapping:
+        raise ValidationError(f"{path}.friendly_name is required")
+    friendly_name = _require_str(mapping["friendly_name"], f"{path}.friendly_name")
+    if enable and not friendly_name.strip():
+        raise ValidationError(f"{path}.friendly_name cannot be empty")
     required = _optional_bool(mapping.get("required"), f"{path}.required", default=True)
     name = _optional_str(mapping.get("name"), f"{path}.name")
     tooltip = _optional_str(mapping.get("tooltip"), f"{path}.tooltip")
@@ -385,9 +387,14 @@ def _build_response(raw: Mapping[str, Any], path: str) -> ResponseConfig:
             raise ValidationError(
                 f"{path}.image.content_type must be 'URL' or 'BINARY'"
             )
+        image_path = _require_str(
+            image_mapping.get("path"), f"{path}.image.path"
+        )
+        if content_type == "URL" and not image_path.strip():
+            raise ValidationError(f"{path}.image.path cannot be empty")
         image = ResponseImage(
             content_type=content_type,
-            path=_require_non_empty_str(image_mapping, "path", f"{path}.image.path"),
+            path=image_path,
             is_list=_optional_bool(
                 image_mapping.get("is_list"), f"{path}.image.is_list", default=False
             ),

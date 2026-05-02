@@ -30,6 +30,7 @@ dependencies = [
 
 [project.scripts]
 apicore-validate = "apicore.cli:main"
+apicore-gui = "apicore.gui:main"
 
 [dependency-groups]
 dev = [

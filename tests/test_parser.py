@@ -115,6 +115,25 @@ def test_invalid_parameter_reference_raises() -> None:
         loads(bad, format="yaml")
 
 
+def test_binary_response_allows_empty_image_path() -> None:
+  binary_yaml = V2_YAML.replace("content_type: URL", "content_type: BINARY").replace(
+    "path: data.output.url", "path: ''"
+  )
+  document = loads(binary_yaml, format="yaml")
+  assert document.response.image is not None
+  assert document.response.image.content_type == "BINARY"
+  assert document.response.image.path == ""
+
+
+def test_disabled_parameter_allows_empty_friendly_name() -> None:
+    disabled_json = V1_JSON.replace('"friendly_name": "数量"', '"friendly_name": ""').replace(
+        '"split_str": null', '"split_str": null,\n      "enable": false'
+    )
+    document = loads(disabled_json)
+    assert document.parameters[0].enable is False
+    assert document.parameters[0].friendly_name == ""
+
+
 def test_cli_compatible_file_loading(tmp_path) -> None:
     file_path = tmp_path / "example.api.yaml"
     file_path.write_text(V2_YAML, encoding="utf-8")
