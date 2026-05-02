@@ -28,6 +28,8 @@ A collaboration by [Little Tree Studio](https://github.com/Little-Tree-Studio) a
 - Defaults to v2 when `APICORE_version` is omitted, unless you manually force `version="v1"`.
 - Preserves custom v2 parameter fields in `Parameter.extra`.
 - Includes a CLI validator for release pipelines and local checks.
+- Includes a desktop GUI validator for interactive file and folder inspection.
+- Exposes typed document models plus `APICoreError`, `ParseError`, and `ValidationError` for precise error handling.
 
 ### Install
 
@@ -90,6 +92,30 @@ apicore-validate path/to/config.api.yaml
 apicore-validate path/to/config.api.json --version v1
 ```
 
+### Desktop GUI
+
+```bash
+apicore-gui
+```
+
+The GUI lets you open files or folders, validate multiple APICORE documents, and inspect parsed metadata, parameters, response mappings, configs, and handlers.
+
+### Error Handling
+
+```python
+from apicore import load
+from apicore.errors import APICoreError, ParseError, ValidationError
+
+try:
+	doc = load("example.api.yaml")
+except ParseError as exc:
+	print(f"Syntax error: {exc}")
+except ValidationError as exc:
+	print(f"Schema error: {exc}")
+except APICoreError as exc:
+	print(f"APICORE error: {exc}")
+```
+
 ### Benchmark
 
 ```bash
@@ -110,3 +136,10 @@ Detailed release steps are in [RELEASING.md](RELEASING.md).
 ### Documentation
 
 Full documentation is available on the [GitHub Wiki](https://github.com/SRON-org/APICORE_Python/wiki).
+
+- Wiki home: [docs/Home.md](docs/Home.md)
+- API reference: [docs/API-Reference.md](docs/API-Reference.md)
+- CLI and GUI: [docs/CLI.md](docs/CLI.md)
+- Data models: [docs/Models.md](docs/Models.md)
+- Errors: [docs/Errors.md](docs/Errors.md)
+- Changelog summary: [docs/Changelog.md](docs/Changelog.md)
