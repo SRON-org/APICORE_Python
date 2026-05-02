@@ -1,6 +1,6 @@
 [project]
 name = "APICORE_Python"
-version = "0.1.0"
+version = "2.0.0"
 description = "High-performance APICORE V1/V2 parser and validator"
 readme = "README.md"
 keywords = ["apicore", "json", "yaml", "toml", "validation", "parser"]

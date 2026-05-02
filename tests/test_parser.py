@@ -153,4 +153,4 @@ def test_forced_version_conflict_raises() -> None:
 
 
 def test_package_version_is_exposed() -> None:
-  assert __version__ == "0.1.0"
+  assert __version__ == "2.0.0"
