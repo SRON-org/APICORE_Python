@@ -1,3 +1,5 @@
+[English](DISCLAIMER.md) | [中文](DISCLAIMER.zh-CN.md)
+
 # Disclaimer
 
 APICORE_Python is provided for parsing and validating APICORE configuration

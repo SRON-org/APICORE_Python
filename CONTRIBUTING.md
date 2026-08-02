@@ -1,3 +1,5 @@
+[English](CONTRIBUTING.md) | [中文](CONTRIBUTING.zh-CN.md)
+
 # Contributing To APICORE_Python
 
 Thank you for helping improve APICORE_Python. Contributions may include bug

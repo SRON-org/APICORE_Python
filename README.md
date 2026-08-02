@@ -1,14 +1,20 @@
+[English](README.md) | [中文](README.zh-CN.md)
+
 <div align="center">
 
-<image src="https://github.com/user-attachments/assets/3b85e1ef-35e3-4f95-bf5e-90ca7f8fae13" height="86"/>
+<img width="86" height="86" alt="APICORE娘-圆角图标" src="https://github.com/user-attachments/assets/17814599-a2af-4605-8a18-be7d1fef2c8d" />
 
 # APICORE_Python
 
-[![Version](https://img.shields.io/badge/version-2.1.0-green.svg)](https://pypi.org/project/APICORE-Python/)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-APICORE access framework for Python
+![Python Version](https://img.shields.io/badge/Python-3.8%2B-brightgreen)
 
-#### [Main Repo](https://github.com/SRON-org/APICORE)
+![Version](https://img.shields.io/badge/Version-2.1.0-lightblue)
+
+APICORE configuration file format specification access framework for Python
+
+#### [Main Repo](https://github.com/SRON-org/APICORE-2)
 
 </div>
 
@@ -16,7 +22,7 @@ APICORE access framework for Python
 
 High-performance APICORE parser and validator for APICORE v1, v2.0, and v2.1.
 
-A collaboration by [Little Tree Studio](https://github.com/Little-Tree-Studio) and [SRInternet Studio](https://github.com/SRInternet-Studio).
+A collaboration by [Little Tree Studio](https://github.com/Little-Tree-Studio) and [SRON Team](https://github.com/SRON-org/).
 
 ### Features
 

@@ -1,4 +1,24 @@
+[English](SECURITY.md) | [中文](SECURITY.zh-CN.md)
+
 # Security Policy
+
+> **Version**: v2.1
+>
+> **Last Updated**: 2026-08-02
+>
+> **Authors**: [Little Tree Studio](https://github.com/Little-Tree-Studio) & [SRON Team](https://github.com/SRON-org/)
+>
+> **Scope**: All parsers, clients, community hubs, and configuration file contributors implementing the APICORE v2.x protocol
+
+## Table of Contents
+
+- [Security Boundary](#security-boundary)
+- [Security Controls And Flags](#security-controls-and-flags)
+- [Safely Integrating `run`](#safely-integrating-run)
+- [Untrusted Input And Resource Limits](#untrusted-input-and-resource-limits)
+- [Decoder And Dependency Safety](#decoder-and-dependency-safety)
+- [Dependency Vulnerability Policy](#dependency-vulnerability-policy)
+- [Reporting A Vulnerability](#reporting-a-vulnerability)
 
 ## Security Boundary
 

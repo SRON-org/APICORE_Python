@@ -1,3 +1,5 @@
+[English](RELEASING.md) | [中文](RELEASING.zh-CN.md)
+
 # Releasing APICORE
 
 ## Preconditions
