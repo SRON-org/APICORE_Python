@@ -6,7 +6,7 @@
 >
 > **Last Updated**: 2026-08-02
 >
-> **Authors**: [Little Tree Studio](https://github.com/Little-Tree-Studio) & [SRON Team](https://github.com/SRON-org/)
+> **Authors**: [Little Tree Studio](https://github.com/Little-Tree-Studio) & [SRON-org](https://github.com/SRON-org/)
 >
 > **Scope**: All parsers, clients, community hubs, and configuration file contributors implementing the APICORE v2.x protocol
 

@@ -20,7 +20,7 @@ APICORE configuration file format specification access framework for Python
 
 High-performance APICORE parser and validator for APICORE v1, v2.0, and v2.1.
 
-A collaboration by [Little Tree Studio](https://github.com/Little-Tree-Studio) and [SRON Team](https://github.com/SRON-org/).
+A collaboration by [Little Tree Studio](https://github.com/Little-Tree-Studio) and [SRON-org](https://github.com/SRON-org/).
 
 ### Features
 
