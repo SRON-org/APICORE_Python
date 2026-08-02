@@ -5,7 +5,6 @@ import timeit
 
 from apicore import loads
 
-
 SAMPLE = json.dumps(
     {
         "friendly_name": "Benchmark API",

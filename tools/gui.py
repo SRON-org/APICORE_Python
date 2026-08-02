@@ -1,17 +1,18 @@
 from __future__ import annotations
 
+"""Repository desktop tool for batch APICORE validation."""
+
 import tkinter as tk
-from tkinter import filedialog, messagebox, ttk
 from pathlib import Path
 from time import perf_counter
-from typing import Any
+from tkinter import filedialog, messagebox, ttk
+from typing import Any, ClassVar
 
-from apicore.errors import APICoreError
-from apicore.parser import load
+from apicore import APICoreError, load
 
 
 class _Result:
-    __slots__ = ("path", "status", "detail", "doc", "elapsed_ms")
+    __slots__ = ("detail", "doc", "elapsed_ms", "path", "status")
 
     def __init__(
         self,
@@ -29,8 +30,10 @@ class _Result:
 
 
 class APICoreValidatorGUI:
-    _SUPPORTED_EXTS = {".json", ".yaml", ".yml", ".toml"}
-    _STATUS_COLORS: dict[str, str] = {
+    """Tkinter application for validating and inspecting APICORE documents."""
+
+    _SUPPORTED_EXTS: ClassVar[set[str]] = {".json", ".yaml", ".yml", ".toml"}
+    _STATUS_COLORS: ClassVar[dict[str, str]] = {
         "OK": "#4caf50",
         "ERROR": "#f44336",
     }
@@ -62,9 +65,7 @@ class APICoreValidatorGUI:
         )
 
         self._status_var = tk.StringVar(value="Ready")
-        ttk.Label(toolbar, textvariable=self._status_var).pack(
-            side=tk.RIGHT, padx=4
-        )
+        ttk.Label(toolbar, textvariable=self._status_var).pack(side=tk.RIGHT, padx=4)
 
         pane = ttk.PanedWindow(self.root, orient=tk.VERTICAL)
         pane.pack(fill=tk.BOTH, expand=True, padx=6, pady=(0, 6))
@@ -72,7 +73,16 @@ class APICoreValidatorGUI:
         list_frame = ttk.Frame(pane)
         pane.add(list_frame, weight=2)
 
-        columns = ("status", "version", "name", "method", "link", "params", "time_ms", "path")
+        columns = (
+            "status",
+            "version",
+            "name",
+            "method",
+            "link",
+            "params",
+            "time_ms",
+            "path",
+        )
         self._tree = ttk.Treeview(
             list_frame, columns=columns, show="headings", selectmode="browse"
         )
@@ -130,7 +140,10 @@ class APICoreValidatorGUI:
         paths = filedialog.askopenfilenames(
             title="Select APICORE Files",
             filetypes=[
-                ("APICORE files", "*.api.json *.api.yaml *.api.yml *.api.toml *.json *.yaml *.yml *.toml"),
+                (
+                    "APICORE files",
+                    "*.api.json *.api.yaml *.api.yml *.api.toml *.json *.yaml *.yml *.toml",
+                ),
                 ("JSON", "*.json"),
                 ("YAML", "*.yaml *.yml"),
                 ("TOML", "*.toml"),
@@ -187,7 +200,7 @@ class APICoreValidatorGUI:
                 doc=None,
                 elapsed_ms=elapsed,
             )
-        except Exception as exc:
+        except (OSError, TypeError, ValueError) as exc:
             elapsed = (perf_counter() - t0) * 1000
             return _Result(
                 path=str(path),
@@ -279,15 +292,33 @@ class APICoreValidatorGUI:
                 lines.append(f"Intro:          {doc.intro}")
             if doc.icon:
                 lines.append(f"Icon:           {doc.icon}")
+            for label, value in (
+                ("Schema", getattr(doc, "schema_url", None)),
+                ("ID", getattr(doc, "id", None)),
+                ("Config Version", getattr(doc, "version", None)),
+                ("Author", getattr(doc, "author", None)),
+                ("License", getattr(doc, "license", None)),
+                ("Repository", getattr(doc, "repository", None)),
+                ("Updated At", getattr(doc, "updated_at", None)),
+            ):
+                if value:
+                    lines.append(f"{label + ':':<16}{value}")
             lines.append("")
 
             lines.append(f"Parameters ({len(doc.parameters)}):")
             for i, param in enumerate(doc.parameters):
                 lines.append(f"  [{i}] {param.friendly_name}")
-                lines.append(f"      name={param.name}  type={param.type}  required={param.required}  enable={param.enable}")
-                lines.append(f"      value={param.value}")
+                lines.append(
+                    f"      name={param.name}  type={param.type}  required={param.required}  enable={param.enable}"
+                )
+                value = "********" if param.text_secret else param.value
+                lines.append(f"      value={value}")
                 if param.friendly_value:
                     lines.append(f"      friendly_value={param.friendly_value}")
+                if param.options:
+                    lines.append(f"      options={param.options}")
+                if param.friendly_options:
+                    lines.append(f"      friendly_options={param.friendly_options}")
                 if param.min_value is not None:
                     lines.append(f"      min_value={param.min_value}")
                 if param.max_value is not None:
@@ -297,18 +328,30 @@ class APICoreValidatorGUI:
                 if param.placeholder:
                     lines.append(f"      placeholder={param.placeholder}")
                 if param.text_secret:
-                    lines.append( "      text_secret=True")
+                    lines.append("      text_secret=True")
+                if param.show_if:
+                    lines.append(f"      show_if={param.show_if}")
                 if param.extra:
                     lines.append(f"      extra={param.extra}")
             lines.append("")
 
             resp = doc.response
             lines.append("Response:")
+            if resp.media is not None:
+                lines.append("  Media (preferred):")
+                lines.append(f"    type={resp.media.type}")
+                lines.append(f"    content_type={resp.media.content_type}")
+                lines.append(f"    path={resp.media.path}")
+                lines.append(
+                    f"    is_list={resp.media.is_list}  is_base64={resp.media.is_base64}"
+                )
             if resp.image is not None:
-                lines.append( "  Image:")
+                lines.append("  Image:")
                 lines.append(f"    content_type={resp.image.content_type}")
                 lines.append(f"    path={resp.image.path}")
-                lines.append(f"    is_list={resp.image.is_list}  is_base64={resp.image.is_base64}")
+                lines.append(
+                    f"    is_list={resp.image.is_list}  is_base64={resp.image.is_base64}"
+                )
             for i, group in enumerate(resp.others):
                 lines.append(f"  Others[{i}]: {group.friendly_name}")
                 for field in group.data:
@@ -319,14 +362,35 @@ class APICoreValidatorGUI:
             if configs is not None:
                 lines.append("Configs:")
                 if configs.request is not None:
-                    lines.append(f"  Request timeout_ms={configs.request.timeout_ms}")
+                    lines.append(
+                        f"  Request body_type={configs.request.body_type} "
+                        f"timeout_ms={configs.request.timeout_ms}"
+                    )
+                    if configs.request.body_template is not None:
+                        lines.append(
+                            f"    body_template={configs.request.body_template}"
+                        )
                     if configs.request.headers:
                         for k, v in configs.request.headers.items():
                             lines.append(f"    {k}: {v}")
                 if configs.retry is not None:
-                    lines.append(f"  Retry count={configs.retry.count} delay_ms={configs.retry.delay_ms}")
+                    lines.append(
+                        f"  Retry count={configs.retry.count} delay_ms={configs.retry.delay_ms}"
+                    )
                 if configs.rate_limit is not None:
-                    lines.append(f"  RateLimit frequency={configs.rate_limit.frequency} per={configs.rate_limit.per}")
+                    lines.append(
+                        f"  RateLimit frequency={configs.rate_limit.frequency} per={configs.rate_limit.per}"
+                    )
+                if configs.polling is not None:
+                    lines.append(
+                        f"  Polling interval_ms={configs.polling.interval_ms} "
+                        f"timeout_ms={configs.polling.timeout_ms}"
+                    )
+                    lines.append(f"    check_link={configs.polling.check_link}")
+                    lines.append(f"    status_path={configs.polling.status_path}")
+                    lines.append(f"    success_value={configs.polling.success_value}")
+                    if configs.polling.failed_value is not None:
+                        lines.append(f"    failed_value={configs.polling.failed_value}")
                 lines.append("")
 
             handlers = getattr(doc, "handlers", None)
@@ -340,6 +404,9 @@ class APICoreValidatorGUI:
                         lines.append(f"      link={handler.link}")
                     if handler.script:
                         lines.append(f"      script={handler.script}")
+                        lines.append(
+                            "      SECURITY: High risk; require explicit user approval"
+                        )
                     if handler.extract:
                         lines.append(f"      extract={handler.extract}")
                     if handler.count is not None:
@@ -364,6 +431,7 @@ class APICoreValidatorGUI:
 
 
 def main() -> None:
+    """Start the desktop validator event loop."""
     root = tk.Tk()
     APICoreValidatorGUI(root)
     root.mainloop()

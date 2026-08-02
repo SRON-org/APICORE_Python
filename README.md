@@ -4,7 +4,7 @@
 
 # APICORE_Python
 
-[![Version](https://img.shields.io/badge/version-2.0.0-green.svg)](VERSION)
+[![Version](https://img.shields.io/badge/version-2.1.0-green.svg)](https://pypi.org/project/APICORE-Python/)
 
 APICORE access framework for Python
 
@@ -14,7 +14,7 @@ APICORE access framework for Python
 
 ## APICORE
 
-High-performance APICORE parser and validator for APICORE v1 and v2.
+High-performance APICORE parser and validator for APICORE v1, v2.0, and v2.1.
 
 A collaboration by [Little Tree Studio](https://github.com/Little-Tree-Studio) and [SRInternet Studio](https://github.com/SRInternet-Studio).
 
@@ -24,11 +24,15 @@ A collaboration by [Little Tree Studio](https://github.com/Little-Tree-Studio) a
 - Uses `orjson` for fast JSON decoding.
 - Uses `ruamel.yaml` with `ruamel.yaml.clib` for YAML decoding.
 - Keeps `msgspec` for fast TOML decoding.
-- Supports APICORE v1 and v2 with a single API.
-- Defaults to v2 when `APICORE_version` is omitted, unless you manually force `version="v1"`.
+- Supports APICORE v1, v2.0, and v2.1 with a single API.
+- Defaults to the latest supported specification, APICORE v2.1, when `APICORE_version` is omitted.
 - Preserves custom v2 parameter fields in `Parameter.extra`.
-- Includes a CLI validator for release pipelines and local checks.
-- Includes a desktop GUI validator for interactive file and folder inspection.
+- Supports v2.1 metadata, `$schema`, i18n UI strings, request body types, polling, and conditional parameters.
+- Supports v2.1 enum `options` with a scalar default while retaining the v2.0 `friendly_value` form.
+- Supports image, audio, video, text, Markdown, and file outputs through `response.media`.
+- Exposes `response.preferred_media`, which prefers v2.1 `media` and adapts legacy `image` automatically.
+- Keeps the published package focused on parsing and validation; no CLI or GUI modules are installed.
+- Provides repository-only CLI and desktop validator tools under `tools/`.
 - Exposes typed document models plus `APICoreError`, `ParseError`, and `ValidationError` for precise error handling.
 
 ### Install
@@ -43,6 +47,9 @@ or
 pip install APICORE_Python
 ```
 
+Installation provides the `apicore` Python library only. It does not install
+`apicore-validate` or `apicore-gui` commands.
+
 ### Quick Start
 
 ```python
@@ -53,22 +60,32 @@ print(__version__)
 document = load("example.api.yaml")
 print(document.apicore_version)
 
-inline = loads("""
+inline = loads(
+    """
 friendly_name: Demo
 link: https://api.example.com/v2/generate
 func: POST
+APICORE_version: '2.1'
 parameters:
-	- name: api_key
-		type: string
-		friendly_name: API Key
-		value: ''
+  - name: style
+    type: enum
+    friendly_name:
+      zh-CN: 风格
+      en-US: Style
+    options: [realistic, anime]
+    friendly_options: [Realistic, Anime]
+    value: realistic
 response:
-	image:
-		content_type: URL
-		path: data.output.url
-""", format="yaml")
+  media:
+    type: image
+    content_type: URL
+    path: data.output.url
+""",
+    format="yaml",
+)
 
-forced_v1 = loads("""
+forced_v1 = loads(
+    """
 {
 	"friendly_name": "Legacy",
 	"link": "https://api.example.com/legacy",
@@ -82,23 +99,36 @@ forced_v1 = loads("""
 		}
 	}
 }
-""", version="v1")
+""",
+    version="v1",
+)
 ```
 
-### CLI
+### Repository CLI Tool
+
+From a repository checkout:
 
 ```bash
-apicore-validate path/to/config.api.yaml
-apicore-validate path/to/config.api.json --version v1
+uv sync
+uv run python tools/cli.py path/to/config.api.yaml
+uv run python tools/cli.py path/to/config.api.json --version v1
+uv run python tools/cli.py path/to/config.api.toml --version 2.1
 ```
 
-### Desktop GUI
+### Repository Desktop Tool
 
 ```bash
-apicore-gui
+uv sync
+uv run python tools/gui.py
 ```
 
-The GUI lets you open files or folders, validate multiple APICORE documents, and inspect parsed metadata, parameters, response mappings, configs, and handlers.
+On Windows, start it without a console after synchronization with
+`.venv\Scripts\pythonw.exe tools\gui.py`. Some Linux distributions require the
+system `python3-tk` package.
+
+The GUI validates multiple APICORE documents and displays v2.1 metadata,
+localized parameters, media mappings, request bodies, polling, configs, and
+handlers. Secret values are masked, and `run` handlers are marked as high risk.
 
 ### Error Handling
 
@@ -107,13 +137,13 @@ from apicore import load
 from apicore.errors import APICoreError, ParseError, ValidationError
 
 try:
-	doc = load("example.api.yaml")
+    doc = load("example.api.yaml")
 except ParseError as exc:
-	print(f"Syntax error: {exc}")
+    print(f"Syntax error: {exc}")
 except ValidationError as exc:
-	print(f"Schema error: {exc}")
+    print(f"Schema error: {exc}")
 except APICoreError as exc:
-	print(f"APICORE error: {exc}")
+    print(f"APICORE error: {exc}")
 ```
 
 ### Benchmark
@@ -135,11 +165,8 @@ Detailed release steps are in [RELEASING.md](RELEASING.md).
 
 ### Documentation
 
-Full documentation is available on the [GitHub Wiki](https://github.com/SRON-org/APICORE_Python/wiki).
-
-- Wiki home: [docs/Home.md](docs/Home.md)
-- API reference: [docs/API-Reference.md](docs/API-Reference.md)
-- CLI and GUI: [docs/CLI.md](docs/CLI.md)
-- Data models: [docs/Models.md](docs/Models.md)
-- Errors: [docs/Errors.md](docs/Errors.md)
-- Changelog summary: [docs/Changelog.md](docs/Changelog.md)
+Wiki documentation is published manually to the
+[GitHub Wiki](https://github.com/SRON-org/APICORE_Python/wiki). The local
+`docs/` upload sources are intentionally ignored by Git. The APICORE v2.1
+specification and JSON Schema are maintained in
+[APICORE-2](https://github.com/SRON-org/APICORE-2).

@@ -1,5 +1,34 @@
 # Changelog
 
+## 2.1.0
+
+### Added
+
+- Added explicit APICORE v2.1 version detection while retaining v1 and v2.0 compatibility.
+- Added v2.1 configuration metadata and `$schema` support.
+- Added i18n language dictionaries for UI-facing names, descriptions, messages, and response labels.
+- Added request `body_type` and `body_template`, asynchronous polling, and typed `show_if` parameter conditions.
+- Added v2.1 enum `options`, `friendly_options`, and scalar default validation.
+- Added generalized `response.media` support for image, audio, video, text, Markdown, and file outputs.
+- Added `ResponseConfig.preferred_media` to apply `media`-over-`image` precedence while adapting legacy image configurations.
+- Added `parse()` for decoded mappings and `resolve_i18n()` for localized UI values.
+- Added repository-only CLI and GUI tools under `tools/`.
+- Added Wiki-ready documentation under `docs/`.
+
+### Changed
+
+- Restricted HTTP methods and handler status codes to the APICORE v2.1 schema values.
+- Extended the CLI with exact `2.0`/`2.1` selectors and clean file-system error handling.
+- Extended GUI details for metadata, media, request bodies, polling, enum options, and conditional parameters.
+- Masked secret parameter values in GUI details and marked `run` handlers as high risk.
+- Updated the package version to 2.1.0.
+- Changed missing `APICORE_version` behavior to use the latest supported specification, v2.1.
+
+### Removed
+
+- Removed `apicore.cli` and `apicore.gui` from the published library package.
+- Removed the installed `apicore-validate` and `apicore-gui` entry points. Use `uv run python tools/cli.py` and `uv run python tools/gui.py` from a repository checkout instead.
+
 ## 2.0.0
 
 2.0.0 is a full rewrite of the old 1.0.0 package line, which fully supported APICORE v1.

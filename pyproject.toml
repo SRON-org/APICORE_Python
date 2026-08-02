@@ -1,7 +1,7 @@
 [project]
 name = "APICORE_Python"
-version = "2.0.0"
-description = "High-performance APICORE V1/V2 parser and validator"
+version = "2.1.0"
+description = "High-performance APICORE v1, v2.0, and v2.1 parser and validator"
 readme = "README.md"
 keywords = ["apicore", "json", "yaml", "toml", "validation", "parser"]
 authors = [
@@ -27,10 +27,6 @@ dependencies = [
     "ruamel.yaml>=0.18.10",
     "ruamel.yaml.clib>=0.2.12",
 ]
-
-[project.scripts]
-apicore-validate = "apicore.cli:main"
-apicore-gui = "apicore.gui:main"
 
 [dependency-groups]
 dev = [

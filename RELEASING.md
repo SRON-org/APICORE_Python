@@ -10,9 +10,20 @@
 
 ```bash
 uv sync --all-groups
+uvx ruff format --check .
+uvx ruff check .
 uv run pytest -q
 uv build
 uv run --with twine twine check dist/*
+```
+
+Inspect the built wheel and verify that it contains only the core `apicore`
+library. It must not contain `apicore/cli.py`, `apicore/gui.py`, `tools/`, or
+console-script entry points. Also smoke-test the repository tools:
+
+```bash
+uv run python tools/cli.py --help
+uv run python -c "import runpy; runpy.run_path('tools/gui.py', run_name='gui_smoke')"
 ```
 
 ## Publish
