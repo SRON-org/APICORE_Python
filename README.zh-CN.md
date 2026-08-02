@@ -7,9 +7,7 @@
 # APICORE_Python
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-
 ![Python版本](https://img.shields.io/badge/Python-3.8%2B-brightgreen)
-
 ![版本号](https://img.shields.io/badge/Version-2.1.0-lightblue)
 
 面向 Python 的 APICORE 配置文件格式规范访问框架
@@ -31,7 +29,7 @@
 - 使用 `ruamel.yaml` 配合 `ruamel.yaml.clib` 实现 YAML 解码。
 - 保留 `msgspec` 实现快速 TOML 解码。
 - 通过单一 API 支持 APICORE v1、v2.0 和 v2.1。
-- 当省略 `APICORE_version` 时，默认使用最新支持的规范 APICORE v2.1。
+- 当省略 `APICORE_version` 时，保留 APICORE v2.0 的语义；而当文档使用仅适用于 v2.1 的字段或本地化值时，则推断为 v2.1。
 - 在 `Parameter.extra` 中保留自定义 v2 参数字段。
 - 支持 v2.1 元数据、`$schema`、i18n UI 字符串、请求体类型、轮询和条件参数。
 - 支持 v2.1 枚举 `options` 使用标量默认值，同时保留 v2.0 的 `friendly_value` 形式。

@@ -7,9 +7,7 @@
 # APICORE_Python
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-
 ![Python Version](https://img.shields.io/badge/Python-3.8%2B-brightgreen)
-
 ![Version](https://img.shields.io/badge/Version-2.1.0-lightblue)
 
 APICORE configuration file format specification access framework for Python
