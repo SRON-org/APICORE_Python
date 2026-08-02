@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Literal
+from typing import Any, Literal, TypeAlias
 
-type APICoreVersion = Literal["1.0", "2.0", "2.1"]
+APICoreVersion: TypeAlias = Literal["v1", "v2"]  # noqa: UP040
+type APICoreSpecVersion = Literal["1.0", "2.0", "2.1"]
 type APICoreFamily = Literal["v1", "v2"]
 type VersionSelector = Literal["v1", "1.0", "v2", "2.0", "2.1", "v2.1"]
 type FormatName = Literal["json", "yaml", "toml"]

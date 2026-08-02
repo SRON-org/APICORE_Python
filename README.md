@@ -25,7 +25,7 @@ A collaboration by [Little Tree Studio](https://github.com/Little-Tree-Studio) a
 - Uses `ruamel.yaml` with `ruamel.yaml.clib` for YAML decoding.
 - Keeps `msgspec` for fast TOML decoding.
 - Supports APICORE v1, v2.0, and v2.1 with a single API.
-- Defaults to the latest supported specification, APICORE v2.1, when `APICORE_version` is omitted.
+- Retains APICORE v2.0 semantics when `APICORE_version` is omitted, while inferring v2.1 when the document uses v2.1-only fields or localized values.
 - Preserves custom v2 parameter fields in `Parameter.extra`.
 - Supports v2.1 metadata, `$schema`, i18n UI strings, request body types, polling, and conditional parameters.
 - Supports v2.1 enum `options` with a scalar default while retaining the v2.0 `friendly_value` form.

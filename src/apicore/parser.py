@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 from collections.abc import Mapping, Sequence
+from http import HTTPMethod
 from pathlib import Path
 from typing import Any, Literal
 from urllib.parse import urlparse
@@ -14,7 +15,7 @@ from ruamel.yaml.error import YAMLError
 from apicore.errors import ParseError, ValidationError
 from apicore.models import (
     APICoreFamily,
-    APICoreVersion,
+    APICoreSpecVersion,
     Configs,
     Document,
     FormatName,
@@ -36,7 +37,8 @@ from apicore.models import (
     VersionSelector,
 )
 
-_HTTP_METHODS = {"GET", "POST", "PUT", "DELETE", "HEAD", "PATCH", "OPTIONS"}
+_LEGACY_HTTP_METHODS = {method.value for method in HTTPMethod}
+_V2_1_HTTP_METHODS = {"GET", "POST", "PUT", "DELETE", "HEAD", "PATCH", "OPTIONS"}
 _V1_STANDARD_TYPES = {"integer", "boolean", "list", "string", "enum"}
 _V2_STANDARD_TYPES = _V1_STANDARD_TYPES | {"number"}
 _HANDLER_ACTIONS = {
@@ -53,6 +55,10 @@ _HANDLER_ACTIONS = {
 _PARAMETER_REFERENCE_RE = re.compile(
     r"\{\{parameters\.(?P<name>[A-Za-z_][A-Za-z0-9_]*)\}\}"
 )
+_INTERPOLATION_RE = re.compile(
+    r"\{\{(?P<scope>parameters|response)\.(?P<name>[A-Za-z_][A-Za-z0-9_]*)\}\}"
+)
+_HANDLER_STATUS_RE = re.compile(r"^[1-5][0-9]{2}$")
 _RATE_LIMIT_UNITS = {"sec", "min", "hour", "day"}
 _BODY_TYPES = {"json", "form-data", "x-www-form-urlencoded", "raw"}
 _MEDIA_TYPES = {"image", "audio", "video", "text", "markdown", "file"}
@@ -70,7 +76,8 @@ def load(
     """Load and validate an APICORE configuration file.
 
     The input format is inferred from the filename unless ``format`` is supplied.
-    Documents without ``APICORE_version`` use the latest supported version, 2.1.
+    Documents without ``APICORE_version`` retain v2.0 semantics unless they use
+    fields or localized values that are specific to APICORE 2.1.
     Filesystem errors are propagated unchanged; decoding and schema failures raise
     :class:`ParseError` and :class:`ValidationError` respectively.
     """
@@ -90,7 +97,8 @@ def loads(
     """Decode and validate an APICORE document from text or bytes.
 
     ``format`` defaults to ``"json"``. Text input is encoded with ``encoding``
-    before decoding. Documents without an explicit version use APICORE 2.1.
+    before decoding. Undeclared v2.1 documents are recognized by their v2.1-only
+    fields; other undeclared documents retain APICORE 2.0 semantics.
     """
     payload = data.encode(encoding) if isinstance(data, str) else data
     resolved_format = format or "json"
@@ -105,7 +113,8 @@ def parse(
 
     This entry point is useful for programmatically generated configurations and
     avoids a JSON/YAML/TOML serialization round trip. The mapping is read but not
-    modified. Missing version declarations default to APICORE 2.1.
+    modified. Missing version declarations retain APICORE 2.0 semantics unless
+    the document contains APICORE 2.1-only features.
     """
     mapping = _require_mapping(data, "$")
     target_version, declared_version = _detect_version(mapping, version)
@@ -188,7 +197,7 @@ def _infer_format_from_path(path: Path) -> FormatName:
 
 def _detect_version(
     raw: Mapping[str, Any], requested: VersionSelector | None
-) -> tuple[APICoreFamily, APICoreVersion]:
+) -> tuple[APICoreFamily, APICoreSpecVersion]:
     declared_raw = raw.get("APICORE_version")
     declared = (
         _normalize_declared_version(declared_raw) if declared_raw is not None else None
@@ -217,12 +226,87 @@ def _detect_version(
             if forced_family == "v1"
             else forced
             if forced in {"2.0", "2.1"}
-            else "2.1"
+            else _infer_undeclared_v2_version(raw)
         )
         return forced_family, resolved
     if declared is None:
-        return "v2", "2.1"
+        return "v2", _infer_undeclared_v2_version(raw)
     return ("v1" if declared == "1.0" else "v2"), declared
+
+
+def _infer_undeclared_v2_version(raw: Mapping[str, Any]) -> Literal["2.0", "2.1"]:
+    if {
+        "$schema",
+        "id",
+        "version",
+        "author",
+        "license",
+        "repository",
+        "updated_at",
+    }.intersection(raw):
+        return "2.1"
+    if isinstance(raw.get("friendly_name"), Mapping) or isinstance(
+        raw.get("intro"), Mapping
+    ):
+        return "2.1"
+
+    configs = raw.get("configs")
+    if isinstance(configs, Mapping):
+        if "polling" in configs:
+            return "2.1"
+        request = configs.get("request")
+        if isinstance(request, Mapping) and {
+            "body_type",
+            "body_template",
+        }.intersection(request):
+            return "2.1"
+
+    parameters = raw.get("parameters")
+    if _is_list_like(parameters):
+        for parameter in parameters:
+            if not isinstance(parameter, Mapping):
+                continue
+            if {"options", "friendly_options", "show_if"}.intersection(parameter):
+                return "2.1"
+            if any(
+                isinstance(parameter.get(field), Mapping)
+                for field in ("friendly_name", "tooltip", "placeholder")
+            ):
+                return "2.1"
+
+    response = raw.get("response")
+    if isinstance(response, Mapping):
+        if "media" in response:
+            return "2.1"
+        others = response.get("others")
+        if _response_uses_i18n(others):
+            return "2.1"
+
+    handlers = raw.get("handlers")
+    if isinstance(handlers, Mapping) and any(
+        isinstance(handler, Mapping) and isinstance(handler.get("message"), Mapping)
+        for handler in handlers.values()
+    ):
+        return "2.1"
+    return "2.0"
+
+
+def _response_uses_i18n(raw_others: Any) -> bool:
+    if not _is_list_like(raw_others):
+        return False
+    for group in raw_others:
+        if not isinstance(group, Mapping):
+            continue
+        if isinstance(group.get("friendly_name"), Mapping):
+            return True
+        data = group.get("data")
+        if _is_list_like(data) and any(
+            isinstance(field, Mapping)
+            and isinstance(field.get("friendly_name"), Mapping)
+            for field in data
+        ):
+            return True
+    return False
 
 
 def _normalize_declared_version(value: Any) -> Literal["1.0", "2.0", "2.1"]:
@@ -265,7 +349,7 @@ def _build_v1(raw: Mapping[str, Any]) -> V1Document:
         icon=_optional_str(raw.get("icon"), "$.icon"),
         link=_validate_url(_require_non_empty_str(raw, "link", "$.link"), "$.link"),
         func=_validate_http_method(
-            _require_non_empty_str(raw, "func", "$.func"), "$.func"
+            _require_non_empty_str(raw, "func", "$.func"), "$.func", version="1.0"
         ),
         apicore_version="1.0",
         parameters=_build_parameters(
@@ -302,7 +386,9 @@ def _build_v2(
                 f"APICORE v2.1 metadata requires APICORE v2.1: {unsupported}"
             )
     func = _validate_http_method(
-        _require_non_empty_str(raw, "func", "$.func"), "$.func"
+        _require_non_empty_str(raw, "func", "$.func"),
+        "$.func",
+        version=declared_version,
     )
     parameters = _build_parameters(
         _require_sequence(raw.get("parameters"), "$.parameters"),
@@ -341,7 +427,9 @@ def _build_v2(
         icon=_optional_str(raw.get("icon"), "$.icon"),
         link=(
             _validate_url_template(
-                _require_non_empty_str(raw, "link", "$.link"), "$.link"
+                _require_non_empty_str(raw, "link", "$.link"),
+                "$.link",
+                allowed_scope="parameters",
             )
             if declared_version == "2.1"
             else _validate_url(_require_non_empty_str(raw, "link", "$.link"), "$.link")
@@ -754,15 +842,6 @@ def _build_configs(
                 f"{path}.request.body_type must be one of {sorted(_BODY_TYPES)}"
             )
         body_template = request_mapping.get("body_template")
-        if body_template is not None:
-            if body_type == "raw" and not isinstance(body_template, str):
-                raise ValidationError(
-                    f"{path}.request.body_template must be a string when body_type is 'raw'"
-                )
-            if body_type != "raw" and not isinstance(body_template, Mapping):
-                raise ValidationError(
-                    f"{path}.request.body_template must be an object when body_type is '{body_type}'"
-                )
         headers: dict[str, str] = {}
         raw_headers = request_mapping.get("headers")
         if raw_headers is not None:
@@ -839,6 +918,7 @@ def _build_configs(
                     polling_mapping, "check_link", f"{path}.polling.check_link"
                 ),
                 f"{path}.polling.check_link",
+                allowed_scope="response",
             ),
             status_path=_require_non_empty_str(
                 polling_mapping, "status_path", f"{path}.polling.status_path"
@@ -869,11 +949,17 @@ def _build_handlers(
                 f"{path}[key] must be an HTTP status code or 'default'"
             )
         handler_key = str(key) if _is_int(key) else _require_str(key, f"{path}[key]")
-        if handler_key != "default" and (
-            not handler_key.isdigit() or not 100 <= int(handler_key) <= 599
+        if (
+            version == "2.1"
+            and handler_key != "default"
+            and not _HANDLER_STATUS_RE.fullmatch(handler_key)
         ):
             raise ValidationError(
-                f"{path}.{handler_key} must be an HTTP status code from 100 to 599 or 'default'"
+                f"{path}.{handler_key} must be a three-digit HTTP status code from 100 to 599 or 'default'"
+            )
+        if version == "2.0" and handler_key != "default" and not handler_key.isdigit():
+            raise ValidationError(
+                f"{path}.{handler_key} must be an HTTP status code or 'default'"
             )
         handler_mapping = _require_mapping(item, f"{path}.{handler_key}")
         if handler_key in handlers:
@@ -1140,8 +1226,11 @@ def _require_non_negative_int(value: Any, path: str) -> int:
     return int(value)
 
 
-def _validate_http_method(value: str, path: str) -> str:
-    if value not in _HTTP_METHODS:
+def _validate_http_method(
+    value: str, path: str, *, version: Literal["1.0", "2.0", "2.1"]
+) -> str:
+    methods = _V2_1_HTTP_METHODS if version == "2.1" else _LEGACY_HTTP_METHODS
+    if value not in methods:
         raise ValidationError(f"{path} must be a valid uppercase HTTP method")
     return value
 
@@ -1153,13 +1242,27 @@ def _validate_url(value: str, path: str) -> str:
     return value
 
 
-def _validate_url_template(value: str, path: str) -> str:
+def _validate_url_template(
+    value: str,
+    path: str,
+    *,
+    allowed_scope: Literal["parameters", "response"],
+) -> str:
     parsed_template = urlparse(value)
     if "{{" in parsed_template.scheme or "{{" in parsed_template.netloc:
         raise ValidationError(
             f"{path} interpolation is only allowed in the URL path or query"
         )
-    sanitized = re.sub(r"\{\{(?:parameters|response)\.[^{}]+\}\}", "value", value)
+    if "{{" in parsed_template.fragment or "}}" in parsed_template.fragment:
+        raise ValidationError(
+            f"{path} interpolation is not allowed in the URL fragment"
+        )
+    for match in _INTERPOLATION_RE.finditer(value):
+        if match.group("scope") != allowed_scope:
+            raise ValidationError(
+                f"{path} only supports '{{{{{allowed_scope}.name}}}}' interpolation"
+            )
+    sanitized = _INTERPOLATION_RE.sub("value", value)
     if "{{" in sanitized or "}}" in sanitized:
         raise ValidationError(f"{path} contains an invalid interpolation template")
     _validate_url(sanitized, path)
