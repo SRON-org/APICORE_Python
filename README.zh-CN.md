@@ -7,7 +7,7 @@
 # APICORE_Python
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-![Python版本](https://img.shields.io/badge/Python-3.8%2B-brightgreen)
+![Python版本](https://img.shields.io/badge/Python-3.12%2B-brightgreen)
 ![版本号](https://img.shields.io/badge/Version-2.1.0-lightblue)
 
 面向 Python 的 APICORE 配置文件格式规范访问框架
