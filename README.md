@@ -163,6 +163,9 @@ uv run --with twine twine check dist/*
 
 Detailed release steps are in [RELEASING.md](RELEASING.md).
 
+Contribution setup, coding expectations, validation commands, and pull request
+requirements are documented in [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ### Documentation
 
 Wiki documentation is published manually to the
@@ -170,3 +173,8 @@ Wiki documentation is published manually to the
 `docs/` upload sources are intentionally ignored by Git. The APICORE v2.1
 specification and JSON Schema are maintained in
 [APICORE-2](https://github.com/SRON-org/APICORE-2).
+
+See [SECURITY.md](SECURITY.md) for the `run` action trust boundary, safe host
+integration guidance, and dependency security practices. See
+[DISCLAIMER.md](DISCLAIMER.md) for execution responsibility and liability
+information.

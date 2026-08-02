@@ -5,7 +5,8 @@ description = "High-performance APICORE v1, v2.0, and v2.1 parser and validator"
 readme = "README.md"
 keywords = ["apicore", "json", "yaml", "toml", "validation", "parser"]
 authors = [
-    { name = "shu-shu-1", email = "3458222@qq.com" }
+    { name = "Little Tree Studio", email = "studio@zsxiaoshu.cn" },
+    { name = "SRInternet Studio", email = "admin@sr-studio.cn"}
 ]
 requires-python = ">=3.12"
 classifiers = [
