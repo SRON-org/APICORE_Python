@@ -20,7 +20,7 @@
 
 高性能 APICORE 解析器和验证器，支持 APICORE v1、v2.0 和 v2.1。
 
-由 [Little Tree Studio](https://github.com/Little-Tree-Studio) 和 [SRON 团队](https://github.com/SRON-org/) 合作开发。
+由 [小树工作室](https://github.com/Little-Tree-Studio) 和 [SRON 团队](https://github.com/SRON-org/) 合作开发。
 
 ### 特性
 
