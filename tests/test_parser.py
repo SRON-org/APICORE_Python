@@ -195,9 +195,9 @@ def test_loads_v1_json() -> None:
     assert document.parameters[0].type == "integer"
 
 
-def test_loads_defaults_to_latest_v2_1_when_version_missing() -> None:
+def test_loads_retains_v2_0_when_version_and_v2_1_features_are_missing() -> None:
     document = loads(V2_YAML, format="yaml")
-    assert document.apicore_version == "2.1"
+    assert document.apicore_version == "2.0"
     assert document.parameters[1].extra == {"precision": 2}
     assert document.configs is not None
     assert document.configs.request is not None
@@ -281,6 +281,32 @@ def test_loads_complete_v2_1_document() -> None:
     }
 
 
+def test_undeclared_document_with_v2_1_features_is_inferred_as_v2_1() -> None:
+    document = loads(V2_1_JSON.replace('  "APICORE_version": "2.1",\n', ""))
+    assert document.apicore_version == "2.1"
+
+
+def test_undeclared_legacy_others_only_response_remains_v2_0() -> None:
+    config = {
+        "friendly_name": "Legacy details",
+        "link": "https://api.example.com/details",
+        "func": "GET",
+        "parameters": [],
+        "response": {
+            "others": [
+                {
+                    "friendly_name": "Details",
+                    "data": [{"friendly_name": "Cost", "path": "data.cost"}],
+                }
+            ]
+        },
+    }
+
+    document = parse(config)
+    assert document.apicore_version == "2.0"
+    assert document.response.others[0].friendly_name == "Details"
+
+
 def test_v2_family_override_accepts_v2_1() -> None:
     document = loads(V2_1_JSON, version="v2")
     assert document.apicore_version == "2.1"
@@ -353,6 +379,43 @@ def test_unsupported_http_methods_are_rejected(method: str) -> None:
         loads(bad)
 
 
+@pytest.mark.parametrize("version", ["1.0", "2.0"])
+@pytest.mark.parametrize("method", ["CONNECT", "TRACE"])
+def test_legacy_versions_retain_all_standard_http_methods(
+    version: str, method: str
+) -> None:
+    config = {
+        "friendly_name": "Legacy",
+        "link": "https://api.example.com/x",
+        "func": method,
+        "APICORE_version": version,
+        "parameters": [],
+        "response": {"image": {"content_type": "URL", "path": "data.url"}},
+    }
+
+    document = parse(config)
+    assert document.func == method
+
+
+@pytest.mark.parametrize(
+    "body_template",
+    [
+        [{"id": "{{parameters.user_id}}"}],
+        "{{parameters.user_id}}",
+        1,
+        True,
+    ],
+)
+def test_v2_1_json_body_template_accepts_any_json_value(body_template: object) -> None:
+    config = json.loads(V2_1_JSON)
+    config["configs"]["request"]["body_template"] = body_template
+
+    document = parse(config)
+    assert document.configs is not None
+    assert document.configs.request is not None
+    assert document.configs.request.body_template == body_template
+
+
 @pytest.mark.parametrize(
     ("parameter", "error"),
     [
@@ -423,6 +486,46 @@ def test_url_interpolation_is_restricted_to_path_and_query() -> None:
         "https://{{parameters.user_id}}/generate",
     )
     with pytest.raises(ValidationError, match="path or query"):
+        loads(bad)
+
+
+def test_main_url_rejects_response_interpolation() -> None:
+    bad = V2_1_JSON.replace(
+        "https://api.example.com/users/{{parameters.user_id}}/generate",
+        "https://api.example.com/tasks/{{response.task_id}}",
+    )
+    with pytest.raises(ValidationError, match="parameters.name"):
+        loads(bad)
+
+
+def test_polling_url_rejects_parameter_interpolation() -> None:
+    bad = V2_1_JSON.replace(
+        "https://api.example.com/tasks/{{response.task_id}}",
+        "https://api.example.com/tasks/{{parameters.user_id}}",
+    )
+    with pytest.raises(ValidationError, match="response.name"):
+        loads(bad)
+
+
+def test_url_rejects_fragment_interpolation() -> None:
+    bad = V2_1_JSON.replace(
+        "https://api.example.com/users/{{parameters.user_id}}/generate",
+        "https://api.example.com/generate#{{parameters.user_id}}",
+    )
+    with pytest.raises(ValidationError, match="fragment"):
+        loads(bad)
+
+
+def test_url_rejects_malformed_parameter_interpolation() -> None:
+    bad = V2_1_JSON.replace("{{parameters.user_id}}", "{{parameters.missing-name}}", 1)
+    with pytest.raises(ValidationError, match="invalid interpolation"):
+        loads(bad)
+
+
+@pytest.mark.parametrize("status", ["0200", "00100"])
+def test_v2_1_handler_status_rejects_leading_zeroes(status: str) -> None:
+    bad = V2_1_JSON.replace('"400": {', f'"{status}": {{')
+    with pytest.raises(ValidationError, match="three-digit"):
         loads(bad)
 
 

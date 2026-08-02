@@ -6,6 +6,7 @@ from importlib.metadata import version as _package_version
 from apicore.errors import APICoreError, ParseError, ValidationError
 from apicore.models import (
     APICoreFamily,
+    APICoreSpecVersion,
     APICoreVersion,
     Configs,
     Document,
@@ -37,6 +38,7 @@ except PackageNotFoundError:
 __all__ = [
     "APICoreError",
     "APICoreFamily",
+    "APICoreSpecVersion",
     "APICoreVersion",
     "Configs",
     "Document",

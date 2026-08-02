@@ -17,12 +17,12 @@
 
 ### Changed
 
-- Restricted HTTP methods and handler status codes to the APICORE v2.1 schema values.
+- Restricted HTTP methods and handler status codes to the APICORE v2.1 schema values while retaining v1 and v2.0 behavior.
 - Extended the CLI with exact `2.0`/`2.1` selectors and clean file-system error handling.
 - Extended GUI details for metadata, media, request bodies, polling, enum options, and conditional parameters.
 - Masked secret parameter values in GUI details and marked `run` handlers as high risk.
 - Updated the package version to 2.1.0.
-- Changed missing `APICORE_version` behavior to use the latest supported specification, v2.1.
+- Preserved v2.0 semantics when `APICORE_version` is missing and added feature-based detection for undeclared v2.1 documents.
 
 ### Removed
 
